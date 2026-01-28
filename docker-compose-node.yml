@@ -1,0 +1,62 @@
+version: "3"
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: postgres-dockerfile
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scheduler}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: scheduler-node.dockerfile
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scheduler}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      SCHEDULER_PORT: ":8081"
+      COORDINATOR_ADDRESS: coordinator:8080
+      DOCKER_COMPOSE_FILE: docker-compose-node.yml
+    ports:
+      - "8081:8081"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/workspace
+    working_dir: /workspace
+    depends_on:
+      - postgres
+
+  coordinator:
+    build:
+      context: .
+      dockerfile: coordinator-node.dockerfile
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scheduler}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      COORDINATOR_PORT: ":8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker-node.dockerfile
+    environment:
+      WORKER_ADDRESS: worker
+      COORDINATOR: coordinator:8080
+    depends_on:
+      - coordinator
