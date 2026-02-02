@@ -2636,8 +2636,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Credits
 
-**Original Author:** JyotinderSingh  
-**JavaScript/Node.js Conversion:** 2026  
 **Purpose:** Educational demonstration of distributed systems
 
 ---
